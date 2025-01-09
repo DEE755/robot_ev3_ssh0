@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="77b38974-dd9b-47af-9edd-19009f2dcb2a" name="ssh robot" url="">
+        <fileTransfer rootFolder="/home/robot/dee_project" accessType="SFTP" host="ev3dev.local" port="22" sshConfigId="c23943fb-62be-4c6f-a302-a89ab27dadaf" sshConfig="robot@ev3dev.local:22 password" />
+      </webServer>
+    </option>
+  </component>
+</project>
