@@ -1,7 +1,41 @@
 import paramiko
 from time import sleep
 
-#initial connection
+import requests
+i=0
+
+def ask_wolfram_alpha(query, i=0):
+    api_key = '3HHHT3-QAVL535XW6'  # Replace with your actual API key
+    url = f'http://api.wolframalpha.com/v1/conversation.jsp?appid={api_key}&i={query}'
+
+    # Send the request to Wolfram Alpha API
+    response = requests.get(url)
+
+    # Check if the request was successful
+    if response.status_code == 200:
+        data = response.json()
+
+        # Retrieve the result from the JSON response
+        if 'result' in data:
+            return data['result']
+        else:
+            if i<=0:
+                return "What a dumb question!"
+                i+=1
+            else:
+                return "Now shut your mouth!"
+    else:
+        return "I don't know you're so annoying"
+
+
+
+
+
+
+def import_python(path_without_extension):
+    return bash("import "+path_without_extension)
+
+
 def create_ssh_client(host, port, username, password):
     """Create and return an SSH client"""
     ssh_client = paramiko.SSHClient()
@@ -9,45 +43,71 @@ def create_ssh_client(host, port, username, password):
     ssh_client.connect(hostname=host, port=port, username=username, password=password)
     return ssh_client
 
+def create_interactive_shell(ssh_client):
+    """Create and return an interactive SSH shell"""
+    return ssh_client.invoke_shell()
+
+def send_command(cmd, interactive_shell):
+    """Send a command to the interactive shell"""
+    interactive_shell.send(cmd + '\n')  # Send the command to the interactive shell
+    sleep(0.5)  # Wait for the command to execute
+    return interactive_shell.recv(1024).decode()
 
 
-
-host = 'ev3dev.local'
-username = 'robot'
-password = 'maker'
-port = 22  # Default SSH port
-
-# Create a persistent SSH connection
-ssh_client = create_ssh_client(host, port, username, password)
-#internal function for message sending
-def send_message(cmd,ssh_client=ssh_client):
-    """Send a message (command) over the open SSH connection"""
-    stdin, stdout, stderr = ssh_client.exec_command(cmd)
-    return stdout.read().decode()
-#shorcut for command-like transparency
-
-def bash(cmd):
-    print(send_message(cmd))
 
 def close_connection(ssh_client):
     """Close the SSH connection"""
     ssh_client.close()
 
-# Send multiple messages using the same connection
-#response1 = send_message(ssh_client, "ls")
+# Usage example:
+host = 'ev3dev.local'
+username = 'robot'
+password = 'maker'
+port = 22  # Default SSH port
 
-#print(initial_message())
-#response2 = send_message(ssh_client, initial_message())
-bash("cd dee_project\npwd")
-sleep(1)
-bash("pwd")
-bash("python3 dee_project/init.py")
-#bash("python3")
-#bash('print("python")')
+# Create SSH client
+ssh_client0 = create_ssh_client(host, port, username, password)
 
-# Print the responses from the remote server
-#print("Response 1:", response1)
-#print("Response 2:", response2)
+# Open interactive shell once
+shell = create_interactive_shell(ssh_client0)
+
+def bash(cmd, interactive_shell=shell):
+    """Run a bash command and print the result"""
+    result = send_command(cmd, interactive_shell)
+    print(result)
+
+# Run commands using the same interactive shell
+bash("cd dee_project")
+#bash("pwd")
+
+# You can continue sending more commands in the same session
+bash("python3")
+#bash("import runpy")
+#sleep(10)
+bash("import init")
+
+#bash('runpy.run_path("init.py")')
+
+
+
+bash("init.talk.talk_ready()")
+
+#sleep(5)
+
+question = "Go left"#use speesh recognization
+answer = ask_wolfram_alpha(question)
+
+bash(f'init.talk.sound.speak("{answer}")')
+
+bash("init.talk.talk_okay()")
+
+#sleep(5)
+
+# Use the imported file's functionality
+
+# Test the AI robot speaking
+
 
 # Close the connection after you're done
-close_connection(ssh_client)
+sleep(35)
+close_connection(ssh_client0)
